@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow" />
+  <title>HH Construction — Founder Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2a2d3a;
+      --accent:   #f59e0b;
+      --green:    #10b981;
+      --red:      #ef4444;
+      --blue:     #3b82f6;
+      --purple:   #8b5cf6;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --font:     'Segoe UI', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    /* ── PASSWORD GATE ── */
+    #gate {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    #gate.hidden { display: none; }
+    .gate-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px 40px;
+      text-align: center;
+      width: 360px;
+    }
+    .gate-logo {
+      width: 56px; height: 56px;
+      background: var(--accent);
+      border-radius: 14px;
+      margin: 0 auto 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+    }
+    .gate-box h2 { font-size: 1.4rem; margin-bottom: 6px; }
+    .gate-box p  { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+    .gate-box input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .gate-box input:focus { border-color: var(--accent); }
+    .gate-box button {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .gate-box button:hover { opacity: .85; }
+    #gate-error { color: var(--red); font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo-row { display: flex; align-items: center; gap: 14px; }
+    .logo-badge {
+      background: var(--accent);
+      color: #000;
+      font-weight: 900;
+      font-size: 1rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+    header h1 { font-size: 1.15rem; font-weight: 600; }
+    .header-meta { color: var(--muted); font-size: 0.82rem; text-align: right; }
+    .header-meta span { display: block; }
+    .live-dot {
+      display: inline-block; width: 8px; height: 8px;
+      background: var(--green); border-radius: 50%;
+      margin-right: 5px; animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: .3; }
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .kpi-card.income::before  { background: var(--green); }
+    .kpi-card.expense::before { background: var(--red); }
+    .kpi-card.material::before{ background: var(--blue); }
+    .kpi-card.profit::before  { background: var(--accent); }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      line-height: 1;
+    }
+    .kpi-value.positive { color: var(--green); }
+    .kpi-value.negative { color: var(--red); }
+    .kpi-value.neutral  { color: var(--text); }
+    .kpi-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .kpi-icon {
+      position: absolute; right: 20px; top: 20px;
+      font-size: 1.6rem; opacity: .15;
+    }
+
+    /* ── CHART GRID ── */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .chart-card h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 20px;
+    }
+    .chart-wrap { position: relative; }
+
+    /* ── PROJECT TABLE ── */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 28px;
+      overflow-x: auto;
+    }
+    .table-card h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 20px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,.03); }
+    tbody td { padding: 14px 14px; vertical-align: middle; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.73rem;
+      font-weight: 600;
+      letter-spacing: .03em;
+    }
+    .badge.active   { background: rgba(16,185,129,.15); color: var(--green); }
+    .badge.complete { background: rgba(59,130,246,.15);  color: var(--blue);  }
+    .badge.pending  { background: rgba(148,163,184,.12); color: var(--muted); }
+
+    .profit-bar-wrap {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .profit-bar {
+      flex: 1; height: 6px; border-radius: 3px;
+      background: var(--border); overflow: hidden;
+    }
+    .profit-bar-fill { height: 100%; border-radius: 3px; transition: width .6s; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      padding: 24px 32px 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── NO-DATA STATE ── */
+    .no-data {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .no-data .icon { font-size: 3rem; margin-bottom: 12px; opacity: .4; }
+    .no-data p { font-size: 0.9rem; }
+
+    /* ── LOADING ── */
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 40px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     PASSWORD GATE
+     Change DASHBOARD_PASSWORD below.
+══════════════════════════════════════ -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">🏗️</div>
+    <h2>HH Construction</h2>
+    <p>Founder Dashboard · Private Access</p>
+    <input type="password" id="pw-input" placeholder="Enter password"
+           onkeydown="if(event.key==='Enter') checkPw()" />
+    <button onclick="checkPw()">Enter Dashboard</button>
+    <div id="gate-error"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN DASHBOARD
+══════════════════════════════════════ -->
+<header>
+  <div class="logo-row">
+    <div class="logo-badge">HH</div>
+    <div>
+      <h1>Construction · Project Dashboard</h1>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span><span class="live-dot"></span>Live Data</span>
+    <span id="last-updated">Loading…</span>
+  </div>
+</header>
+
+<main>
+  <div id="loading" style="text-align:center;padding:60px 0;">
+    <div class="spinner"></div>
+    <p style="color:var(--muted);font-size:.9rem;">Fetching project data…</p>
+  </div>
+
+  <div id="dashboard-content" style="display:none;">
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <!-- Charts Row -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>📊 Income vs Costs per Project</h3>
+        <div class="chart-wrap">
+          <canvas id="barChart" height="220"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>🥧 Cost Breakdown</h3>
+        <div class="chart-wrap">
+          <canvas id="donutChart" height="220"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Table -->
+    <div class="table-card">
+      <h3>📋 Project Profit Summary</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Project ID</th>
+            <th>Project Name</th>
+            <th>Status</th>
+            <th>Income</th>
+            <th>Expenses</th>
+            <th>Materials</th>
+            <th>Est. Profit</th>
+            <th>Margin</th>
+          </tr>
+        </thead>
+        <tbody id="project-tbody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /dashboard-content -->
+</main>
+
+<footer>
+  HH Construction · Founder Dashboard · Confidential &amp; Private
+  · <span id="footer-year"></span>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════
+//  CONFIG — edit these two values
+// ══════════════════════════════════════════════════
+const DASHBOARD_PASSWORD = "hhconstruct2026"; // ← change this
+const SHEET_ID = "1RsiHWDbSHfO58He4Y7x-JJWEqOPHMVDnS_NitS9yLwY";
+
+// ══════════════════════════════════════════════════
+//  PASSWORD CHECK
+// ══════════════════════════════════════════════════
+function checkPw() {
+  const val = document.getElementById('pw-input').value.trim();
+  if (val === DASHBOARD_PASSWORD) {
+    document.getElementById('gate').classList.add('hidden');
+    initDashboard();
+  } else {
+    document.getElementById('gate-error').textContent = 'Incorrect password. Try again.';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  DATA LAYER
+//  Tries to fetch live data from Google Sheets.
+//  Falls back to embedded snapshot if sheet is
+//  not publicly shared.
+// ══════════════════════════════════════════════════
+
+// EMBEDDED SNAPSHOT — updated automatically when
+// the Google Apps Script sync is set up, or manually.
+const SNAPSHOT = [
+  {
+    projectId:   "AMA-001",
+    projectName: "Amas House",
+    status:      "Active",
+    income:      0,
+    expenses:    43.70,
+    materials:   0,
+    profit:      -43.70,
+  },
+  // Add more projects here as needed:
+  // { projectId:"...", projectName:"...", status:"Active", income:0, expenses:0, materials:0, profit:0 }
+];
+
+async function fetchSheetData() {
+  // Try to load live data from Google Sheets public JSON feed
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Dashboard`;
+  try {
+    const res  = await fetch(url);
+    const text = await res.text();
+    // Google wraps the JSON in a callback — strip it
+    const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
+    const rows = json.table.rows;
+    if (!rows || rows.length === 0) return null;
+
+    return rows.map(r => {
+      const c = r.c;
+      const get = (i) => (c[i] && c[i].v != null) ? c[i].v : 0;
+      const str = (i) => (c[i] && c[i].v != null) ? String(c[i].v) : '';
+      return {
+        projectId:   str(0),
+        projectName: str(1),
+        status:      'Active',   // fetch from Projects tab if needed
+        income:      get(2),
+        expenses:    get(3),
+        materials:   get(4),
+        profit:      get(5),
+      };
+    }).filter(p => p.projectId);
+  } catch(e) {
+    return null; // sheet not public — use snapshot
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  RENDER HELPERS
+// ══════════════════════════════════════════════════
+const fmt = (n) =>
+  new Intl.NumberFormat('en-CA', { style:'currency', currency:'CAD', maximumFractionDigits:2 }).format(n);
+
+const profitClass = (n) => n > 0 ? 'positive' : n < 0 ? 'negative' : 'neutral';
+
+function renderKPIs(data) {
+  const totalIncome    = data.reduce((s,p) => s + p.income, 0);
+  const totalExpenses  = data.reduce((s,p) => s + p.expenses, 0);
+  const totalMaterials = data.reduce((s,p) => s + p.materials, 0);
+  const totalProfit    = data.reduce((s,p) => s + p.profit, 0);
+
+  const kpis = [
+    { label:'Total Income',    value: totalIncome,    cls:'income',   icon:'💰', sub: `${data.length} active project${data.length!==1?'s':''}` },
+    { label:'Total Expenses',  value: totalExpenses,  cls:'expense',  icon:'🧾', sub: 'Labour, meals & overheads' },
+    { label:'Total Materials', value: totalMaterials, cls:'material', icon:'🪵', sub: 'Supplies & materials' },
+    { label:'Net Profit',      value: totalProfit,    cls:'profit',   icon:'📈', sub: totalProfit >= 0 ? 'Ahead of costs' : 'Costs exceed income' },
+  ];
+
+  document.getElementById('kpi-grid').innerHTML = kpis.map(k => `
+    <div class="kpi-card ${k.cls}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value ${profitClass(k.value)}">${fmt(k.value)}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>
+  `).join('');
+}
+
+let barChartInst = null;
+let donutChartInst = null;
+
+function renderCharts(data) {
+  // ── Bar chart ──
+  if (barChartInst) barChartInst.destroy();
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  barChartInst = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: data.map(p => p.projectName),
+      datasets: [
+        {
+          label: 'Income',
+          data: data.map(p => p.income),
+          backgroundColor: 'rgba(16,185,129,.75)',
+          borderRadius: 6,
+        },
+        {
+          label: 'Expenses',
+          data: data.map(p => p.expenses),
+          backgroundColor: 'rgba(239,68,68,.75)',
+          borderRadius: 6,
+        },
+        {
+          label: 'Materials',
+          data: data.map(p => p.materials),
+          backgroundColor: 'rgba(59,130,246,.75)',
+          borderRadius: 6,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: '#94a3b8', font: { size: 12 } }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,.05)' } },
+        y: {
+          ticks: {
+            color: '#94a3b8',
+            callback: v => fmt(v)
+          },
+          grid: { color: 'rgba(255,255,255,.05)' }
+        }
+      }
+    }
+  });
+
+  // ── Donut chart ──
+  if (donutChartInst) donutChartInst.destroy();
+  const totalExp  = data.reduce((s,p) => s + p.expenses, 0);
+  const totalMat  = data.reduce((s,p) => s + p.materials, 0);
+  const donutCtx  = document.getElementById('donutChart').getContext('2d');
+
+  const hasData = totalExp + totalMat > 0;
+  donutChartInst = new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Expenses', 'Materials'],
+      datasets: [{
+        data: hasData ? [totalExp, totalMat] : [1, 0],
+        backgroundColor: hasData
+          ? ['rgba(239,68,68,.8)', 'rgba(59,130,246,.8)']
+          : ['rgba(42,45,58,1)',   'rgba(42,45,58,0)'],
+        borderWidth: 0,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      cutout: '68%',
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#94a3b8', font: { size: 12 }, padding: 16 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => hasData
+              ? ` ${ctx.label}: ${fmt(ctx.parsed)}`
+              : ' No cost data yet'
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderTable(data) {
+  const maxAbs = Math.max(...data.map(p => Math.abs(p.profit)), 1);
+  const tbody = document.getElementById('project-tbody');
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8">
+      <div class="no-data">
+        <div class="icon">📂</div>
+        <p>No projects found. Add projects to your Google Sheet to see them here.</p>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(p => {
+    const pct    = p.income > 0 ? ((p.profit / p.income) * 100).toFixed(1) : '—';
+    const barPct = Math.min((Math.abs(p.profit) / maxAbs) * 100, 100);
+    const barCol = p.profit >= 0 ? 'var(--green)' : 'var(--red)';
+    const statusBadge =
+      p.status === 'Active'   ? 'active'   :
+      p.status === 'Complete' ? 'complete' : 'pending';
+
+    return `
+      <tr>
+        <td style="color:var(--muted);font-family:monospace">${p.projectId}</td>
+        <td style="font-weight:600">${p.projectName}</td>
+        <td><span class="badge ${statusBadge}">${p.status}</span></td>
+        <td style="color:var(--green)">${fmt(p.income)}</td>
+        <td style="color:var(--red)">${fmt(p.expenses)}</td>
+        <td style="color:var(--blue)">${fmt(p.materials)}</td>
+        <td style="font-weight:700;color:${p.profit>=0?'var(--green)':'var(--red)'}">
+          ${fmt(p.profit)}
+        </td>
+        <td style="min-width:120px">
+          <div class="profit-bar-wrap">
+            <div class="profit-bar">
+              <div class="profit-bar-fill"
+                style="width:${barPct}%;background:${barCol}"></div>
+            </div>
+            <span style="font-size:.8rem;color:var(--muted);white-space:nowrap">
+              ${pct !== '—' ? pct + '%' : '—'}
+            </span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+async function initDashboard() {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // Try live data, fall back to snapshot
+  let data = await fetchSheetData();
+  const isLive = !!data;
+  if (!data || data.length === 0) data = SNAPSHOT;
+
+  // Update header
+  const now = new Date();
+  document.getElementById('last-updated').textContent =
+    `${isLive ? 'Live' : 'Snapshot'} · ${now.toLocaleString('en-CA', {
+      month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
+    })}`;
+
+  // Render everything
+  renderKPIs(data);
+  renderCharts(data);
+  renderTable(data);
+
+  // Show dashboard
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('dashboard-content').style.display = 'block';
+}
+</script>
+</body>
+</html>
