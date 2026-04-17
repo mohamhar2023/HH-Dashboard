@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <title>HH Construction — Founder Dashboard</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="./public-data.js"></script>
   <style>
     :root {
       --bg:       #0f1117;
@@ -372,7 +373,6 @@
 //  CONFIG — edit these two values
 // ══════════════════════════════════════════════════
 const DASHBOARD_PASSWORD = "hhconstruct2026"; // ← change this
-const SHEET_ID = "1RsiHWDbSHfO58He4Y7x-JJWEqOPHMVDnS_NitS9yLwY";
 
 // ══════════════════════════════════════════════════
 //  PASSWORD CHECK
@@ -391,55 +391,16 @@ function checkPw() {
 
 // ══════════════════════════════════════════════════
 //  DATA LAYER
-//  Tries to fetch live data from Google Sheets.
-//  Falls back to embedded snapshot if sheet is
-//  not publicly shared.
+//  Reads sanitized dashboard data from a generated
+//  local snapshot file committed to this repo.
 // ══════════════════════════════════════════════════
 
-// EMBEDDED SNAPSHOT — updated automatically when
-// the Google Apps Script sync is set up, or manually.
-const SNAPSHOT = [
-  {
-    projectId:   "AMA-001",
-    projectName: "Amas House",
-    status:      "Active",
-    income:      0,
-    expenses:    43.70,
-    materials:   0,
-    profit:      -43.70,
-  },
-  // Add more projects here as needed:
-  // { projectId:"...", projectName:"...", status:"Active", income:0, expenses:0, materials:0, profit:0 }
-];
+const SNAPSHOT = (window.HH_DASHBOARD_DATA && Array.isArray(window.HH_DASHBOARD_DATA.projects))
+  ? window.HH_DASHBOARD_DATA.projects
+  : [];
 
-async function fetchSheetData() {
-  // Try to load live data from Google Sheets public JSON feed
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Dashboard`;
-  try {
-    const res  = await fetch(url);
-    const text = await res.text();
-    // Google wraps the JSON in a callback — strip it
-    const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
-    const rows = json.table.rows;
-    if (!rows || rows.length === 0) return null;
-
-    return rows.map(r => {
-      const c = r.c;
-      const get = (i) => (c[i] && c[i].v != null) ? c[i].v : 0;
-      const str = (i) => (c[i] && c[i].v != null) ? String(c[i].v) : '';
-      return {
-        projectId:   str(0),
-        projectName: str(1),
-        status:      'Active',   // fetch from Projects tab if needed
-        income:      get(2),
-        expenses:    get(3),
-        materials:   get(4),
-        profit:      get(5),
-      };
-    }).filter(p => p.projectId);
-  } catch(e) {
-    return null; // sheet not public — use snapshot
-  }
+function fetchSnapshotData() {
+  return SNAPSHOT;
 }
 
 // ══════════════════════════════════════════════════
@@ -625,17 +586,18 @@ function renderTable(data) {
 async function initDashboard() {
   document.getElementById('footer-year').textContent = new Date().getFullYear();
 
-  // Try live data, fall back to snapshot
-  let data = await fetchSheetData();
-  const isLive = !!data;
-  if (!data || data.length === 0) data = SNAPSHOT;
+  const data = fetchSnapshotData();
+  const generatedAt = window.HH_DASHBOARD_DATA && window.HH_DASHBOARD_DATA.generatedAt;
 
   // Update header
   const now = new Date();
-  document.getElementById('last-updated').textContent =
-    `${isLive ? 'Live' : 'Snapshot'} · ${now.toLocaleString('en-CA', {
-      month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
-    })}`;
+  document.getElementById('last-updated').textContent = generatedAt
+    ? `Sanitized snapshot · ${new Date(generatedAt).toLocaleString('en-CA', {
+        month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
+      })}`
+    : `Sanitized snapshot · ${now.toLocaleString('en-CA', {
+        month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
+      })}`;
 
   // Render everything
   renderKPIs(data);
