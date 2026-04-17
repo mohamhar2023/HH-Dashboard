@@ -372,14 +372,14 @@
 // ══════════════════════════════════════════════════
 //  CONFIG — edit these two values
 // ══════════════════════════════════════════════════
-const DASHBOARD_PASSWORD = "hhconstruct2026"; // ← change this
+const DASHBOARD_PASSWORDS = ["hamza", "harry"]; // ← change these
 
 // ══════════════════════════════════════════════════
 //  PASSWORD CHECK
 // ══════════════════════════════════════════════════
 function checkPw() {
-  const val = document.getElementById('pw-input').value.trim();
-  if (val === DASHBOARD_PASSWORD) {
+  const val = document.getElementById('pw-input').value.trim().toLowerCase();
+  if (DASHBOARD_PASSWORDS.includes(val)) {
     document.getElementById('gate').classList.add('hidden');
     initDashboard();
   } else {
