@@ -6,7 +6,9 @@
   <meta name="robots" content="noindex, nofollow" />
   <title>HH Construction — Founder Dashboard</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="./public-data.js"></script>
+  <script>
+    document.write(`<script src="./public-data.js?v=${Date.now()}"><\/script>`);
+  </script>
   <style>
     :root {
       --bg:       #0f1117;
