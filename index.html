@@ -129,6 +129,17 @@
       padding: 22px 24px;
       position: relative;
       overflow: hidden;
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(245,158,11,.45);
+      box-shadow: 0 14px 30px rgba(0,0,0,.18);
+    }
+    .kpi-card.active {
+      border-color: rgba(245,158,11,.8);
+      box-shadow: 0 0 0 1px rgba(245,158,11,.35), 0 14px 30px rgba(0,0,0,.22);
     }
     .kpi-card::before {
       content: '';
@@ -386,6 +397,23 @@
     <!-- KPI Cards -->
     <div class="kpi-grid" id="kpi-grid"></div>
 
+    <div class="table-card" id="recent-updates-card" style="display:none;">
+      <h3 id="recent-updates-title">🕘 Recent Updates</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Project</th>
+            <th>Party</th>
+            <th>Description</th>
+            <th>Reference</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody id="recent-updates-body"></tbody>
+      </table>
+    </div>
+
     <!-- Charts Row -->
     <div class="chart-grid">
       <div class="chart-card">
@@ -460,6 +488,12 @@ function checkPw() {
 const SNAPSHOT = (window.HH_DASHBOARD_DATA && Array.isArray(window.HH_DASHBOARD_DATA.projects))
   ? window.HH_DASHBOARD_DATA.projects
   : [];
+const RECENT = (window.HH_DASHBOARD_DATA && window.HH_DASHBOARD_DATA.recent) || {
+  income: [],
+  expenses: [],
+  materials: [],
+};
+let activeRecentType = null;
 
 function fetchSnapshotData() {
   return SNAPSHOT;
@@ -480,19 +514,65 @@ function renderKPIs(data) {
   const totalProfit    = data.reduce((s,p) => s + p.profit, 0);
 
   const kpis = [
-    { label:'Total Income',    value: totalIncome,    cls:'income',   icon:'💰', sub: `${data.length} active project${data.length!==1?'s':''}` },
-    { label:'Total Expenses',  value: totalExpenses,  cls:'expense',  icon:'🧾', sub: 'Labour, meals & overheads' },
-    { label:'Total Materials', value: totalMaterials, cls:'material', icon:'🪵', sub: 'Supplies & materials' },
-    { label:'Net Profit',      value: totalProfit,    cls:'profit',   icon:'📈', sub: totalProfit >= 0 ? 'Ahead of costs' : 'Costs exceed income' },
+    { key:'income', label:'Total Income',    value: totalIncome,    cls:'income',   icon:'💰', sub: `${data.length} active project${data.length!==1?'s':''}` },
+    { key:'expenses', label:'Total Expenses',  value: totalExpenses,  cls:'expense',  icon:'🧾', sub: 'Labour, meals & overheads' },
+    { key:'materials', label:'Total Materials', value: totalMaterials, cls:'material', icon:'🪵', sub: 'Supplies & materials' },
+    { key:'profit', label:'Net Profit',      value: totalProfit,    cls:'profit',   icon:'📈', sub: totalProfit >= 0 ? 'Ahead of costs' : 'Costs exceed income' },
   ];
 
   document.getElementById('kpi-grid').innerHTML = kpis.map(k => `
-    <div class="kpi-card ${k.cls}">
+    <div class="kpi-card ${k.cls} ${activeRecentType === k.key ? 'active' : ''}" ${k.key !== 'profit' ? `data-recent-type="${k.key}"` : ''}>
       <div class="kpi-icon">${k.icon}</div>
       <div class="kpi-label">${k.label}</div>
       <div class="kpi-value ${profitClass(k.value)}">${fmt(k.value)}</div>
       <div class="kpi-sub">${k.sub}</div>
     </div>
+  `).join('');
+
+  document.querySelectorAll('[data-recent-type]').forEach(card => {
+    card.addEventListener('click', () => {
+      const nextType = card.dataset.recentType;
+      activeRecentType = activeRecentType === nextType ? null : nextType;
+      renderKPIs(data);
+      renderRecentUpdates();
+    });
+  });
+}
+
+function renderRecentUpdates() {
+  const card = document.getElementById('recent-updates-card');
+  const title = document.getElementById('recent-updates-title');
+  const body = document.getElementById('recent-updates-body');
+
+  if (!activeRecentType || !RECENT[activeRecentType]) {
+    card.style.display = 'none';
+    body.innerHTML = '';
+    return;
+  }
+
+  const labels = {
+    income: '💰 10 Most Recent Income Updates',
+    expenses: '🧾 10 Most Recent Expense Updates',
+    materials: '🪵 10 Most Recent Material Updates',
+  };
+  const rows = RECENT[activeRecentType];
+  title.textContent = labels[activeRecentType] || '🕘 Recent Updates';
+  card.style.display = 'block';
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="6"><div class="no-data"><div class="icon">🕘</div><p>No recent ${activeRecentType} entries yet.</p></div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(item => `
+    <tr>
+      <td>${item.date || '—'}</td>
+      <td>${item.projectName || item.projectId || '—'}</td>
+      <td>${item.party || '—'}</td>
+      <td>${item.description || item.category || '—'}</td>
+      <td>${item.reference || '—'}</td>
+      <td style="font-weight:700;color:${activeRecentType === 'income' ? 'var(--green)' : activeRecentType === 'expenses' ? 'var(--red)' : 'var(--blue)'}">${fmt(item.amount || 0)}</td>
+    </tr>
   `).join('');
 }
 
@@ -663,6 +743,7 @@ async function initDashboard() {
 
   // Render everything
   renderKPIs(data);
+  renderRecentUpdates();
   renderCharts(data);
   renderTable(data);
 
