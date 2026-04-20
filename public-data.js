@@ -1,5 +1,5 @@
 window.HH_DASHBOARD_DATA = {
-  "generatedAt": "2026-04-20T16:38:58Z",
+  "generatedAt": "2026-04-20T16:42:07Z",
   "source": "sanitized-export",
   "projects": [
     {
@@ -19,7 +19,7 @@ window.HH_DASHBOARD_DATA = {
         "date": "2026-04-19",
         "projectId": "AMA-001",
         "projectName": "Amas House",
-        "party": "Unknown sender",
+        "party": "Grace Haven Residential Care S",
         "reference": "CAXr8Rmq",
         "description": "Interac e-Transfer payment screenshot",
         "amount": 2500.0,
