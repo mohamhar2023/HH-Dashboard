@@ -1,14 +1,14 @@
 window.HH_DASHBOARD_DATA = {
-  "generatedAt": "2026-04-20T16:42:07Z",
+  "generatedAt": "2026-04-20T17:19:41Z",
   "source": "sanitized-export",
   "projects": [
     {
       "projectId": "AMA-001",
       "projectName": "Amas House",
       "income": 5000.0,
-      "expenses": 1823.7,
+      "expenses": 2073.7,
       "materials": 1921.96,
-      "profit": 1254.34,
+      "profit": 1004.34,
       "status": "Active"
     }
   ],
@@ -40,6 +40,19 @@ window.HH_DASHBOARD_DATA = {
       }
     ],
     "expenses": [
+      {
+        "kind": "expense",
+        "date": "2026-04-20",
+        "projectId": "AMA-001",
+        "projectName": "Amas House",
+        "party": "Hamza",
+        "category": "Payroll / Labour",
+        "reference": "INV-2026-04-20-001",
+        "description": "Hamza Payroll / Labour",
+        "amount": 250.0,
+        "paidBy": "",
+        "notes": "Source form label: AMA. Staged from submitted invoice sheet. Payable to HH Construction; invoice for Hamza; manual invoice created by request."
+      },
       {
         "kind": "expense",
         "date": "2026-04-15",
