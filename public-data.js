@@ -1,5 +1,5 @@
 window.HH_DASHBOARD_DATA = {
-  "generatedAt": "2026-04-20T17:19:41Z",
+  "generatedAt": "2026-04-20T17:39:08Z",
   "source": "sanitized-export",
   "projects": [
     {
@@ -7,8 +7,8 @@ window.HH_DASHBOARD_DATA = {
       "projectName": "Amas House",
       "income": 5000.0,
       "expenses": 2073.7,
-      "materials": 1921.96,
-      "profit": 1004.34,
+      "materials": 1960.37,
+      "profit": 965.93,
       "status": "Active"
     }
   ],
@@ -81,6 +81,19 @@ window.HH_DASHBOARD_DATA = {
       }
     ],
     "materials": [
+      {
+        "kind": "material",
+        "date": "2026-04-20",
+        "projectId": "AMA-001",
+        "projectName": "Amas House",
+        "party": "G&W Building Supplies",
+        "description": "200SQFT/ROLL EVA3MM UNDER",
+        "quantity": "1",
+        "unitCost": "$33.99",
+        "amount": 38.41,
+        "priceCheck": "",
+        "notes": "Receipt P1260420133459. Debit card. Subtotal $33.99; HST $4.42. 1780 Wharncliffe Rd S, London, ON. Source form label: Ama. Best-effort match to Amas House / 93 Basil Cres."
+      },
       {
         "kind": "material",
         "date": "2026-04-20",
