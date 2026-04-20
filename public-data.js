@@ -1,5 +1,5 @@
 window.HH_DASHBOARD_DATA = {
-  "generatedAt": "2026-04-20T16:32:32Z",
+  "generatedAt": "2026-04-20T16:38:58Z",
   "source": "sanitized-export",
   "projects": [
     {
@@ -25,6 +25,18 @@ window.HH_DASHBOARD_DATA = {
         "amount": 2500.0,
         "status": "Received",
         "notes": "Source form label: Ama. Best-effort match to Amas House / 93 Basil Cres. Screenshot shows recipient greeting hi harry and reference CAXr8Rmq; sender text is obscured in image."
+      },
+      {
+        "kind": "income",
+        "date": "2026-04-06",
+        "projectId": "AMA-001",
+        "projectName": "Amas House",
+        "party": "Grace Haven Residential Care S",
+        "reference": "CAjTJxXV",
+        "description": "Interac e-Transfer payment screenshot",
+        "amount": 2500.0,
+        "status": "Received",
+        "notes": "Source form label: AMA. Best-effort match to Amas House / 93 Basil Cres. Entered from Interac screenshot, not formal invoice. Recipient text appears as harry Hamsa."
       }
     ],
     "expenses": [
@@ -40,6 +52,19 @@ window.HH_DASHBOARD_DATA = {
         "amount": 1780.0,
         "paidBy": "Cash",
         "notes": "Source form label: AMA. Best-effort match to Amas House / 93 Basil Cres. Vendor name not visible on image; no tax shown; billed to HH Construction."
+      },
+      {
+        "kind": "expense",
+        "date": "2026-04-07",
+        "projectId": "AMA-001",
+        "projectName": "Amas House",
+        "party": "Chick-fil-A Masonville",
+        "category": "Food / Meals",
+        "reference": "Order 337722",
+        "description": "Guest copy meal receipt (Hamza)",
+        "amount": 43.7,
+        "paidBy": "Card",
+        "notes": "Subtotal 38.67; HST 5.03; London, ON; 2:47 PM"
       }
     ],
     "materials": [
@@ -81,6 +106,19 @@ window.HH_DASHBOARD_DATA = {
         "amount": 1486.88,
         "priceCheck": "",
         "notes": "Receipt/terminal ref A000002771010. Visa/Interac terminal slip visible. 1100 Commissioners Rd E, London, ON. Subtotal 1315.82; HST 171.06. Source form label: AMA. Best-effort match to Amas House / 93 Basil Cres."
+      },
+      {
+        "kind": "material",
+        "date": "2026-04-14",
+        "projectId": "AMA-001",
+        "projectName": "Amas House",
+        "party": "Nanak Plumbing & Reno Supplies",
+        "description": "Casings and header materials",
+        "quantity": "16",
+        "unitCost": "",
+        "amount": 99.82,
+        "priceCheck": "",
+        "notes": "Receipt A0003744. Cash. 41 Clarke Road, London, ON N5W 5W5. Subtotal 88.34; HST 11.48. Source form label: AMA. Best-effort match to Amas House / 93 Basil Cres."
       }
     ]
   }

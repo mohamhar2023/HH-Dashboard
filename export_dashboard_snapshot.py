@@ -51,7 +51,13 @@ def build_recent(range_name, kind, field_map):
     rows = get_range(range_name)
     if not rows:
         return []
-    header, *data_rows = rows
+
+    data_rows = rows
+    if rows and rows[0] and any(str(cell).strip() for cell in rows[0]):
+        looks_like_header = str(rows[0][0]).strip().lower() in {"date", "timestamp", "project id"}
+        if looks_like_header:
+            data_rows = rows[1:]
+
     items = []
     for row in data_rows:
         if not row or not any(str(cell).strip() for cell in row):
@@ -67,7 +73,7 @@ def build_recent(range_name, kind, field_map):
 
 
 recent_income = build_recent(
-    "Income!A2:I1000",
+    "Income!A1:I1000",
     "income",
     {
         "date": 0,
@@ -83,7 +89,7 @@ recent_income = build_recent(
 )
 
 recent_expenses = build_recent(
-    "Expenses!A2:J1000",
+    "Expenses!A1:J1000",
     "expense",
     {
         "date": 0,
@@ -100,7 +106,7 @@ recent_expenses = build_recent(
 )
 
 recent_materials = build_recent(
-    "Materials!A2:J1000",
+    "Materials!A1:J1000",
     "material",
     {
         "date": 0,
