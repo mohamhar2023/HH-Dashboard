@@ -121,6 +121,7 @@
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin-bottom: 28px;
+      align-items: start;
     }
     .kpi-card {
       background: var(--surface);
@@ -176,6 +177,35 @@
     .kpi-icon {
       position: absolute; right: 20px; top: 20px;
       font-size: 1.6rem; opacity: .15;
+    }
+    .kpi-dropdown {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .kpi-dropdown-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.82rem;
+    }
+    .kpi-dropdown-name {
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .kpi-dropdown-amount {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .kpi-dropdown-empty {
+      font-size: 0.8rem;
+      color: var(--muted);
     }
 
     /* ── CHART GRID ── */
@@ -397,23 +427,6 @@
     <!-- KPI Cards -->
     <div class="kpi-grid" id="kpi-grid"></div>
 
-    <div class="table-card" id="recent-updates-card" style="display:none;">
-      <h3 id="recent-updates-title">🕘 Recent Updates</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Project</th>
-            <th>Party</th>
-            <th>Description</th>
-            <th>Reference</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody id="recent-updates-body"></tbody>
-      </table>
-    </div>
-
     <!-- Charts Row -->
     <div class="chart-grid">
       <div class="chart-card">
@@ -514,66 +527,48 @@ function renderKPIs(data) {
   const totalProfit    = data.reduce((s,p) => s + p.profit, 0);
 
   const kpis = [
-    { key:'income', label:'Total Income',    value: totalIncome,    cls:'income',   icon:'💰', sub: `${data.length} active project${data.length!==1?'s':''}` },
-    { key:'expenses', label:'Total Expenses',  value: totalExpenses,  cls:'expense',  icon:'🧾', sub: 'Labour, meals & overheads' },
+    { key:'income', label:'Total Income', value: totalIncome, cls:'income', icon:'💰', sub: `${data.length} active project${data.length!==1?'s':''}` },
+    { key:'expenses', label:'Total Expenses', value: totalExpenses, cls:'expense', icon:'🧾', sub: 'Labour, meals & overheads' },
     { key:'materials', label:'Total Materials', value: totalMaterials, cls:'material', icon:'🪵', sub: 'Supplies & materials' },
-    { key:'profit', label:'Net Profit',      value: totalProfit,    cls:'profit',   icon:'📈', sub: totalProfit >= 0 ? 'Ahead of costs' : 'Costs exceed income' },
+    { key:'profit', label:'Net Profit', value: totalProfit, cls:'profit', icon:'📈', sub: totalProfit >= 0 ? 'Ahead of costs' : 'Costs exceed income' },
   ];
 
-  document.getElementById('kpi-grid').innerHTML = kpis.map(k => `
-    <div class="kpi-card ${k.cls} ${activeRecentType === k.key ? 'active' : ''}" ${k.key !== 'profit' ? `data-recent-type="${k.key}"` : ''}>
-      <div class="kpi-icon">${k.icon}</div>
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-value ${profitClass(k.value)}">${fmt(k.value)}</div>
-      <div class="kpi-sub">${k.sub}</div>
-    </div>
-  `).join('');
+  document.getElementById('kpi-grid').innerHTML = kpis.map(k => {
+    const dropdownRows = activeRecentType === k.key && RECENT[k.key]
+      ? RECENT[k.key].map(item => {
+          const name = item.party || item.description || item.projectName || 'Unknown';
+          const color = k.key === 'income' ? 'var(--green)' : k.key === 'expenses' ? 'var(--red)' : 'var(--blue)';
+          return `
+            <div class="kpi-dropdown-row">
+              <span class="kpi-dropdown-name">${name}</span>
+              <span class="kpi-dropdown-amount" style="color:${color}">${fmt(item.amount || 0)}</span>
+            </div>
+          `;
+        }).join('')
+      : '';
+
+    const dropdown = activeRecentType === k.key
+      ? `<div class="kpi-dropdown">${dropdownRows || `<div class="kpi-dropdown-empty">No recent entries yet.</div>`}</div>`
+      : '';
+
+    return `
+      <div class="kpi-card ${k.cls} ${activeRecentType === k.key ? 'active' : ''}" ${k.key !== 'profit' ? `data-recent-type="${k.key}"` : ''}>
+        <div class="kpi-icon">${k.icon}</div>
+        <div class="kpi-label">${k.label}</div>
+        <div class="kpi-value ${profitClass(k.value)}">${fmt(k.value)}</div>
+        <div class="kpi-sub">${k.sub}</div>
+        ${dropdown}
+      </div>
+    `;
+  }).join('');
 
   document.querySelectorAll('[data-recent-type]').forEach(card => {
     card.addEventListener('click', () => {
       const nextType = card.dataset.recentType;
       activeRecentType = activeRecentType === nextType ? null : nextType;
       renderKPIs(data);
-      renderRecentUpdates();
     });
   });
-}
-
-function renderRecentUpdates() {
-  const card = document.getElementById('recent-updates-card');
-  const title = document.getElementById('recent-updates-title');
-  const body = document.getElementById('recent-updates-body');
-
-  if (!activeRecentType || !RECENT[activeRecentType]) {
-    card.style.display = 'none';
-    body.innerHTML = '';
-    return;
-  }
-
-  const labels = {
-    income: '💰 10 Most Recent Income Updates',
-    expenses: '🧾 10 Most Recent Expense Updates',
-    materials: '🪵 10 Most Recent Material Updates',
-  };
-  const rows = RECENT[activeRecentType];
-  title.textContent = labels[activeRecentType] || '🕘 Recent Updates';
-  card.style.display = 'block';
-
-  if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="6"><div class="no-data"><div class="icon">🕘</div><p>No recent ${activeRecentType} entries yet.</p></div></td></tr>`;
-    return;
-  }
-
-  body.innerHTML = rows.map(item => `
-    <tr>
-      <td>${item.date || '—'}</td>
-      <td>${item.projectName || item.projectId || '—'}</td>
-      <td>${item.party || '—'}</td>
-      <td>${item.description || item.category || '—'}</td>
-      <td>${item.reference || '—'}</td>
-      <td style="font-weight:700;color:${activeRecentType === 'income' ? 'var(--green)' : activeRecentType === 'expenses' ? 'var(--red)' : 'var(--blue)'}">${fmt(item.amount || 0)}</td>
-    </tr>
-  `).join('');
 }
 
 let barChartInst = null;
@@ -743,7 +738,6 @@ async function initDashboard() {
 
   // Render everything
   renderKPIs(data);
-  renderRecentUpdates();
   renderCharts(data);
   renderTable(data);
 
