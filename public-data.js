@@ -1,5 +1,5 @@
 window.HH_DASHBOARD_DATA = {
-  "generatedAt": "2026-04-20T17:39:08Z",
+  "generatedAt": "2026-05-08T04:11:56Z",
   "source": "sanitized-export",
   "projects": [
     {
@@ -81,6 +81,32 @@ window.HH_DASHBOARD_DATA = {
       }
     ],
     "materials": [
+      {
+        "kind": "material",
+        "date": "2026-05-07",
+        "projectId": "AMA-001",
+        "projectName": "Amas House",
+        "party": "G&W Building Supplies",
+        "description": "Staining Kit; Jigsaw Blade Set 10PC; CW02 7MM 24.355F/BOX 8PC; 8FT Vinyl T-Molding/Reduc; SAM-601 Midnight 946ml",
+        "quantity": "5",
+        "unitCost": "",
+        "amount": 134.79,
+        "priceCheck": "",
+        "notes": "Receipt P1260507124049. Debit/Interac contactless per terminal slip; itemized receipt shows credit card. Subtotal $119.28; HST $15.51. Reference 612700522023; Auth 008795. 1780 Wharncliffe Rd S, London, ON. Source form label: AMA. Source response timestamp: 5/7/2026 23:27:50. Best-effort match to Amas House / 93 Basil Cres."
+      },
+      {
+        "kind": "material",
+        "date": "2026-05-07",
+        "projectId": "AMA-001",
+        "projectName": "Amas House",
+        "party": "G&W Building Supplies",
+        "description": "Dryer Plug; Electric Box",
+        "quantity": "2",
+        "unitCost": "$5.69",
+        "amount": 12.86,
+        "priceCheck": "",
+        "notes": "Receipt P2260507124314. Credit card. Subtotal $11.38; HST $1.48. 1780 Wharncliffe Rd S, London, ON. Source form label: AMA. Source response timestamp: 5/7/2026 23:27:50. Best-effort match to Amas House / 93 Basil Cres."
+      },
       {
         "kind": "material",
         "date": "2026-04-20",
