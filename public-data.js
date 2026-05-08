@@ -1,5 +1,5 @@
 window.HH_DASHBOARD_DATA = {
-  "generatedAt": "2026-05-08T04:11:56Z",
+  "generatedAt": "2026-05-08T04:17:03Z",
   "source": "sanitized-export",
   "projects": [
     {
@@ -7,8 +7,8 @@ window.HH_DASHBOARD_DATA = {
       "projectName": "Amas House",
       "income": 5000.0,
       "expenses": 2073.7,
-      "materials": 1960.37,
-      "profit": 965.93,
+      "materials": 2108.02,
+      "profit": 818.28,
       "status": "Active"
     }
   ],
