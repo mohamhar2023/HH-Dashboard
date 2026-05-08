@@ -31,19 +31,46 @@ def parse_money(value):
         return 0.0
 
 
-projects_rows = get_range("Dashboard!A2:F1000")
+project_rows = get_range("Projects!A2:H1000")
+income_rows = get_range("Income!A1:I1000")
+expense_rows = get_range("Expenses!A1:J1000")
+material_rows = get_range("Materials!A1:J1000")
+
+
+def iter_data_rows(rows):
+    if not rows:
+        return []
+    data_rows = rows
+    if rows and rows[0] and any(str(cell).strip() for cell in rows[0]):
+        looks_like_header = str(rows[0][0]).strip().lower() in {"date", "timestamp", "project id"}
+        if looks_like_header:
+            data_rows = rows[1:]
+    return data_rows
+
+
+income_rows = iter_data_rows(income_rows)
+expense_rows = iter_data_rows(expense_rows)
+material_rows = iter_data_rows(material_rows)
+
 projects = []
-for row in projects_rows:
+for row in project_rows:
     if not row or len(row) < 2 or not row[0]:
         continue
+    project_id = row[0]
+    project_name = row[1] if len(row) > 1 else ""
+    status = row[4] if len(row) > 4 and row[4] else "Active"
+    income = sum(parse_money(r[6] if len(r) > 6 else 0) for r in income_rows if len(r) > 1 and r[1] == project_id)
+    expenses = sum(parse_money(r[7] if len(r) > 7 else 0) for r in expense_rows if len(r) > 1 and r[1] == project_id)
+    materials = sum(parse_money(r[7] if len(r) > 7 else 0) for r in material_rows if len(r) > 1 and r[1] == project_id)
+    profit = round(income - expenses - materials, 2)
     projects.append({
-        "projectId": row[0],
-        "projectName": row[1] if len(row) > 1 else "",
-        "income": parse_money(row[2] if len(row) > 2 else 0),
-        "expenses": parse_money(row[3] if len(row) > 3 else 0),
-        "materials": parse_money(row[4] if len(row) > 4 else 0),
-        "profit": parse_money(row[5] if len(row) > 5 else 0),
-        "status": "Active",
+        "projectId": project_id,
+        "projectName": project_name,
+        "income": income,
+        "expenses": expenses,
+        "materials": materials,
+        "profit": profit,
+        "status": status,
     })
 
 
